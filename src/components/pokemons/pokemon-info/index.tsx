@@ -1,109 +1,112 @@
 "use client"
 
-import { Pokemon } from "pokenode-ts"
 import { useEffect, useState } from "react"
 import { PokemonClient } from "pokenode-ts"
 import Image from "next/image"
-import Link from "next/link"
+import { useParams } from "next/navigation"
 
-// Mapeamento dos tipos
-const typeColorMap: Record<string, string> = {
-  bug: "bg-bug",
-  dark: "bg-dark",
-  dragon: "bg-dragon",
-  electric: "bg-electric",
-  fairy: "bg-fairy",
-  fighting: "bg-fighting",
-  fire: "bg-fire",
-  flying: "bg-flying",
-  ghost: "bg-ghost",
-  grass: "bg-grass",
-  ground: "bg-ground",
-  ice: "bg-ice",
-  normal: "bg-normal",
-  poison: "bg-poison",
-  psychic: "bg-psychic",
-  rock: "bg-rock",
-  steel: "bg-steel",
-  water: "bg-water"
-}
-
-export default function PokemonInfo({ params }: { params: { id: string } }) {
-  const [pokemon, setPokemon] = useState<Pokemon | null>(null)
+export default function PokemonInfo() {
+  const [pokemon, setPokemon] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  
+  const params = useParams()
+  const pokemonName = params.name as string
 
   useEffect(() => {
+    const controller = new AbortController()
+    const signal = controller.signal
+
     const fetchPokemon = async () => {
       try {
+        setLoading(true)
+        setError(null)
+        
         const api = new PokemonClient()
-        const data = await api.getPokemonById(Number(params.id))
+        const data = await api.getPokemonByName(pokemonName.toLowerCase(), { signal })
+        
         setPokemon(data)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error")
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          setError(err.message || `Não foi possível carregar o Pokémon ${pokemonName}`)
+          console.error("Erro na requisição:", err)
+        }
       } finally {
         setLoading(false)
       }
     }
 
     fetchPokemon()
-  }, [params.id])
 
-  if (loading) return <div>Loading...</div>
-  if (error) return <div>Error: {error}</div>
-  if (!pokemon) return <div>Pokémon not found</div>
+    return () => controller.abort()
+  }, [pokemonName])
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p>Loading {pokemonName}...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-red-500 text-xl">{error}</p>
+      </div>
+    )
+  }
+
+  if (!pokemon) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>No Pokémon found</p>
+      </div>
+    )
+  }
 
   const imageUrl = pokemon.sprites.other?.['official-artwork']?.front_default || 
-                  pokemon.sprites.front_default ||
-                  '/pokezone-icon.svg'
+                   pokemon.sprites.front_default ||
+                   '/pokezone-icon.svg'
 
   return (
     <div className="flex flex-col items-center gap-8 mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-6 xl:py-8 min-h-screen">
-      <div className="flex flex-col items-center gap-4 bg-white p-8 rounded-lg shadow-lg">
+      <div className="flex flex-col items-center gap-2">
         <h2 className="text-gray-600 text-2xl">#{pokemon.id.toString().padStart(4, '0')}</h2>
         <h3 className="font-bold text-3xl capitalize">{pokemon.name}</h3>
         
-        <div className="relative w-64 h-64">
+        <div className="relative">
           <Image 
-            src={imageUrl}
+            src={imageUrl} 
             alt={pokemon.name}
-            fill
-            className="object-contain"
-            onError={(e) => {
-              e.currentTarget.src = '/pokezone-icon.svg'
-            }}
+            className="bg-gray-200 rounded-md p-1"
+            width={256}
+            height={256}
+            priority
           />
         </div>
 
         <div className="flex gap-4 mt-4">
-          {pokemon.types.map((type, index) => (
+          {pokemon.types.map((typeInfo: any) => (
             <span 
-              key={index}
-              className={`${typeColorMap[type.type.name] || 'bg-normal'} text-white px-4 py-2 rounded-full text-sm font-bold capitalize`}
+              key={typeInfo.type.name}
+              className="px-4 py-1 bg-gray-200 rounded-full capitalize"
             >
-              {type.type.name}
+              {typeInfo.type.name}
             </span>
           ))}
         </div>
 
-        {/* Adicione mais informações do Pokémon aqui */}
         <div className="mt-6 grid grid-cols-2 gap-4 w-full">
           <div className="bg-gray-100 p-4 rounded-lg">
-            <h4 className="font-semibold">Height</h4>
+            <h4 className="font-semibold">Altura</h4>
             <p>{(pokemon.height / 10).toFixed(1)} m</p>
           </div>
           <div className="bg-gray-100 p-4 rounded-lg">
-            <h4 className="font-semibold">Weight</h4>
+            <h4 className="font-semibold">Peso</h4>
             <p>{(pokemon.weight / 10).toFixed(1)} kg</p>
           </div>
         </div>
-
-        <Link 
-          href="/pokemons" 
-          className="mt-8 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-        >
-          Back to Pokédex
-        </Link>
       </div>
     </div>
   )

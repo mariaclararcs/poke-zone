@@ -72,6 +72,7 @@ const formatPokemonName = (name: string) => {
   if (name === 'shaymin-land') return 'Shaymin'
   if (name === 'porygon-z') return 'Porygon-Z'
   if (name === 'wormadam-plant') return 'Wormadam'
+  if (name === 'giratina-altered') return 'Giratina'
   
   return name
     .split('-')
@@ -87,7 +88,7 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
   return (
     <div className="flex flex-col justify-center items-center w-fit gap-2 border-1 border-gray-400 rounded-md p-2">
       <Link 
-        href={`/pokemons/${pokemon.id}`}
+        href={`/pokemons/${pokemon.name}`}
         className="cursor-pointer"
       >
         <div>
@@ -113,7 +114,7 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
             <span 
               key={index}
               className={`${typeColorMap[type.type.name] || 'bg-normal'} flex justify-center items-center w-22 text-background px-2 py-1 rounded-sm text-xs font-medium capitalize`}
-              >
+              > 
                 {type.type.name}
             </span>
           ))}

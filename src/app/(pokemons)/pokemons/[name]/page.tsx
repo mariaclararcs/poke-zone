@@ -1,14 +1,12 @@
+"use client"
+
 import PokemonInfo from "@/components/pokemons/pokemon-info"
 import Layout from "@/app/_layouts/root"
 
-export default function PokemonDetailPage({
-  params
-}: {
-  params: { id: string }
-}) {
+export default function Page() {
   return (
     <Layout>
-      <PokemonInfo params={params} />
+      <PokemonInfo />
     </Layout>
   )
 }
