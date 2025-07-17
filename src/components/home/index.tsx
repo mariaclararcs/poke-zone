@@ -10,7 +10,7 @@ import { z } from "zod"
 export default function Home() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const limit = 20
+  const limit = 30
 
   const currentPage = z.coerce
     .number()

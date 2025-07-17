@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { PokemonClient, Pokemon as PokeApiPokemon } from "pokenode-ts"
 import Image from "next/image"
 import { useParams } from "next/navigation"
+import { formatPokemonName, PokemonTypeBadge, getFirstTypeColor } from "@/lib/pokemonUtils"
 
 export default function PokemonInfo() {
   const [pokemon, setPokemon] = useState<PokeApiPokemon | null>(null)
@@ -12,28 +13,6 @@ export default function PokemonInfo() {
   
   const params = useParams()
   const pokemonName = params.name as string
-
-  // Mapeamento dos tipos
-  const typeColorMap: Record<string, string> = {
-    bug: "bg-bug",
-    dark: "bg-dark",
-    dragon: "bg-dragon",
-    electric: "bg-electric",
-    fairy: "bg-fairy",
-    fighting: "bg-fighting",
-    fire: "bg-fire",
-    flying: "bg-flying",
-    ghost: "bg-ghost",
-    grass: "bg-grass",
-    ground: "bg-ground",
-    ice: "bg-ice",
-    normal: "bg-normal",
-    poison: "bg-poison",
-    psychic: "bg-psychic",
-    rock: "bg-rock",
-    steel: "bg-steel",
-    water: "bg-water"
-  }
 
   useEffect(() => {
     let isMounted = true
@@ -71,7 +50,7 @@ export default function PokemonInfo() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <p>Loading {pokemonName}...</p>
+        <p>Loading...</p>
       </div>
     )
   }
@@ -96,35 +75,42 @@ export default function PokemonInfo() {
   pokemon.sprites.front_default ||
   '/pokezone-icon.svg'
 
+  const bgColorClass = getFirstTypeColor(pokemon)
+
   return (
-    <div className="flex flex-col items-center gap-8 mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-6 xl:py-8 min-h-screen">
-      <div className="flex flex-col items-center gap-2">
-        <h2 className="text-gray-600 text-2xl">#{pokemon.id.toString().padStart(4, '0')}</h2>
-        <h3 className="font-bold text-3xl capitalize">{pokemon.name}</h3>
+    <div className="flex flex-col items-center gap-8 mx-auto px-4 sm:px-10 md:px-18 lg:px-24 py-6 xl:py-8 min-h-screen">
+      <div className={`flex flex-col items-center gap-2 py-6 px-44 ${bgColorClass} w-fit rounded-xl`}>
+        <div className="flex flex-row gap-3 text-3xl">
+          <h2 className="font-bold capitalize">{formatPokemonName(pokemon.name)}</h2>
+          <h2 className="text-gray-600">#{pokemon.id.toString().padStart(4, '0')}</h2>
+        </div>
+
+        <div className="flex gap-2 m-1">
+          {pokemon.types.map((type, index) => (
+            <PokemonTypeBadge key={index} type={type.type.name} className="rounded-2xl text-md w-28" />
+          ))}
+        </div>
         
         <div className="relative">
           <Image 
             src={imageUrl} 
             alt={pokemon.name}
-            className="bg-gray-200 rounded-md p-1"
+            className="rounded-md p-1"
             width={256}
             height={256}
             priority
           />
         </div>
+      </div>
 
-        <div className="flex gap-2 m-1">
-          {pokemon.types.map((type, index) => (
-            <span 
-              key={index}
-              className={`${typeColorMap[type.type.name] || 'bg-normal'} flex justify-center items-center w-24 text-background px-2 py-1 rounded-md text-sm font-medium capitalize`}
-              > 
-                {type.type.name}
-            </span>
-          ))}
-        </div>
+      <div className="flex flex-col gap-2">
+        <h4>Description</h4>
+        <h4>Species</h4>
+        <h4>Abilities</h4>
+        <h4>Gender</h4>
+        <h4>Weaknesses</h4>
 
-        <div className="mt-6 grid grid-cols-2 gap-4 w-full">
+        <div className="grid grid-cols-2 gap-4 w-full">
           <div className="bg-gray-100 p-4 rounded-lg">
             <h4 className="font-semibold">Height</h4>
             <p>{(pokemon.height / 10).toFixed(1)} m</p>
