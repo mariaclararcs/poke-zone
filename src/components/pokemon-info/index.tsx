@@ -1,21 +1,42 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { PokemonClient } from "pokenode-ts"
+import { PokemonClient, Pokemon as PokeApiPokemon } from "pokenode-ts"
 import Image from "next/image"
 import { useParams } from "next/navigation"
 
 export default function PokemonInfo() {
-  const [pokemon, setPokemon] = useState<any>(null)
+  const [pokemon, setPokemon] = useState<PokeApiPokemon | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
   const params = useParams()
   const pokemonName = params.name as string
 
+  // Mapeamento dos tipos
+  const typeColorMap: Record<string, string> = {
+    bug: "bg-bug",
+    dark: "bg-dark",
+    dragon: "bg-dragon",
+    electric: "bg-electric",
+    fairy: "bg-fairy",
+    fighting: "bg-fighting",
+    fire: "bg-fire",
+    flying: "bg-flying",
+    ghost: "bg-ghost",
+    grass: "bg-grass",
+    ground: "bg-ground",
+    ice: "bg-ice",
+    normal: "bg-normal",
+    poison: "bg-poison",
+    psychic: "bg-psychic",
+    rock: "bg-rock",
+    steel: "bg-steel",
+    water: "bg-water"
+  }
+
   useEffect(() => {
-    const controller = new AbortController()
-    const signal = controller.signal
+    let isMounted = true
 
     const fetchPokemon = async () => {
       try {
@@ -23,22 +44,28 @@ export default function PokemonInfo() {
         setError(null)
         
         const api = new PokemonClient()
-        const data = await api.getPokemonByName(pokemonName.toLowerCase(), { signal })
+        const data = await api.getPokemonByName(pokemonName.toLowerCase())
         
-        setPokemon(data)
-      } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          setError(err.message || `Não foi possível carregar o Pokémon ${pokemonName}`)
+        if (isMounted) {
+          setPokemon(data)
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(`Não foi possível carregar o Pokémon ${pokemonName}`)
           console.error("Erro na requisição:", err)
         }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchPokemon()
 
-    return () => controller.abort()
+    return () => {
+      isMounted = false
+    }
   }, [pokemonName])
 
   if (loading) {
@@ -66,8 +93,8 @@ export default function PokemonInfo() {
   }
 
   const imageUrl = pokemon.sprites.other?.['official-artwork']?.front_default || 
-                   pokemon.sprites.front_default ||
-                   '/pokezone-icon.svg'
+  pokemon.sprites.front_default ||
+  '/pokezone-icon.svg'
 
   return (
     <div className="flex flex-col items-center gap-8 mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-6 xl:py-8 min-h-screen">
@@ -86,24 +113,24 @@ export default function PokemonInfo() {
           />
         </div>
 
-        <div className="flex gap-4 mt-4">
-          {pokemon.types.map((typeInfo: any) => (
+        <div className="flex gap-2 m-1">
+          {pokemon.types.map((type, index) => (
             <span 
-              key={typeInfo.type.name}
-              className="px-4 py-1 bg-gray-200 rounded-full capitalize"
-            >
-              {typeInfo.type.name}
+              key={index}
+              className={`${typeColorMap[type.type.name] || 'bg-normal'} flex justify-center items-center w-24 text-background px-2 py-1 rounded-md text-sm font-medium capitalize`}
+              > 
+                {type.type.name}
             </span>
           ))}
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-4 w-full">
           <div className="bg-gray-100 p-4 rounded-lg">
-            <h4 className="font-semibold">Altura</h4>
+            <h4 className="font-semibold">Height</h4>
             <p>{(pokemon.height / 10).toFixed(1)} m</p>
           </div>
           <div className="bg-gray-100 p-4 rounded-lg">
-            <h4 className="font-semibold">Peso</h4>
+            <h4 className="font-semibold">Weight</h4>
             <p>{(pokemon.weight / 10).toFixed(1)} kg</p>
           </div>
         </div>

@@ -25,59 +25,66 @@ const typeColorMap: Record<string, string> = {
 }
 
 // Formatação dos nomes
-const formatPokemonName = (name: string) => {
-  // Casos especiais primeiro
-  if (name === 'nidoran-f') return 'Nidoran♀'
-  if (name === 'nidoran-m') return 'Nidoran♂'
-  if (name === 'farfetchd') return "Farfetch'd"
-  if (name === 'mr-mime') return 'Mr. Mime'
-  if (name === 'mime-jr') return 'Mime Jr.'
-  if (name === 'ho-oh') return 'Ho-Oh'
-  if (name === 'dudunsparce-two-segment') return 'Dudunsparce'
-  if (name === 'chi-yu') return 'Chi-Yu'
-  if (name === 'ting-lu') return 'Ting-Lu'
-  if (name === 'chien-pao') return 'Chien-Pao'
-  if (name === 'wo-chien') return 'Wo-Chien'
-  if (name === 'tatsugiri-curly') return 'Tatsugiri'
-  if (name === 'maushold-family-of-four') return 'Maushold'
-  if (name === 'squawkabilly-green-plumage') return 'Squawkabilly'
-  if (name === 'basculegion-male') return 'Basculegion'
-  if (name === 'enamorus-incarnate') return 'Enamorus'
-  if (name === 'oinkologne-male') return 'Oinkologne'
-  if (name === 'urshifu-single-strike') return 'Urshifu'
-  if (name === 'indeedee-male') return 'Indeedee'
-  if (name === 'morpeko-full-belly') return 'Morpeko'
-  if (name === 'mr-rime') return 'Mr. Rime'
-  if (name === 'toxtricity-amped') return 'Toxtricity'
-  if (name === 'jangmo-o') return 'Jangmo-O'
-  if (name === 'hakamo-o') return 'Hakamo-O'
-  if (name === 'kommo-o') return 'Kommo-O'
-  if (name === 'type-null') return 'Type: Null'
-  if (name === 'minior-red-meteor') return 'Minior'
-  if (name === 'mimikyu-disguised') return 'Mimikyu'
-  if (name === 'wishiwashi-solo') return 'Wishiwashi'
-  if (name === 'oricorio-baile') return 'Oricorio'
-  if (name === 'lycanroc-midday') return 'Lycanroc'
-  if (name === 'pumpkaboo-average') return 'Pumpkaboo'
-  if (name === 'gourgeist-average') return 'Gourgeist'
-  if (name === 'zygarde-50') return 'Zygarde'
-  if (name === 'aegislash-shield') return 'Aegislash'
-  if (name === 'meloetta-aria') return 'Meloetta'
-  if (name === 'keldeo-ordinary') return 'Keldeo'
-  if (name === 'landorus-incarnate') return 'Landorus'
-  if (name === 'thundurus-incarnate') return 'Thundurus'
-  if (name === 'tornadus-incarnate') return 'Tornadus'
-  if (name === 'darmanitan-standard') return 'Darmanitan'
-  if (name === 'basculin-red-striped') return 'Basculin'
-  if (name === 'shaymin-land') return 'Shaymin'
-  if (name === 'porygon-z') return 'Porygon-Z'
-  if (name === 'wormadam-plant') return 'Wormadam'
-  if (name === 'giratina-altered') return 'Giratina'
+const PokemonNameMap: Record<string, string> = {
+  'nidoran-f': 'Nidoran♀',
+  'nidoran-m': 'Nidoran♂',
+  'farfetchd': "Farfetch'd",
+  'mr-mime': 'Mr. Mime',
+  'mime-jr': 'Mime Jr.',
+  'ho-oh': 'Ho-Oh',
+  'chi-yu': 'Chi-Yu',
+  'ting-lu': 'Ting-Lu',
+  'chien-pao': 'Chien-Pao',
+  'wo-chien': 'Wo-Chien',
+  'mr-rime': 'Mr. Rime',
+  'jangmo-o': 'Jangmo-O',
+  'hakamo-o': 'Hakamo-O',
+  'kommo-o': 'Kommo-O',
+  'type-null': 'Type: Null',
+  'porygon-z': 'Porygon-Z',
   
-  return name
+  'dudunsparce-two-segment': 'Dudunsparce',
+  'tatsugiri-curly': 'Tatsugiri',
+  'maushold-family-of-four': 'Maushold',
+  'squawkabilly-green-plumage': 'Squawkabilly',
+  'basculegion-male': 'Basculegion',
+  'enamorus-incarnate': 'Enamorus',
+  'oinkologne-male': 'Oinkologne',
+  'urshifu-single-strike': 'Urshifu',
+  'indeedee-male': 'Indeedee',
+  'morpeko-full-belly': 'Morpeko',
+  'toxtricity-amped': 'Toxtricity',
+  'minior-red-meteor': 'Minior',
+  'mimikyu-disguised': 'Mimikyu',
+  'wishiwashi-solo': 'Wishiwashi',
+  'oricorio-baile': 'Oricorio',
+  'lycanroc-midday': 'Lycanroc',
+  'pumpkaboo-average': 'Pumpkaboo',
+  'gourgeist-average': 'Gourgeist',
+  'zygarde-50': 'Zygarde',
+  'aegislash-shield': 'Aegislash',
+  'meloetta-aria': 'Meloetta',
+  'keldeo-ordinary': 'Keldeo',
+  'landorus-incarnate': 'Landorus',
+  'thundurus-incarnate': 'Thundurus',
+  'tornadus-incarnate': 'Tornadus',
+  'darmanitan-standard': 'Darmanitan',
+  'basculin-red-striped': 'Basculin',
+  'shaymin-land': 'Shaymin',
+  'wormadam-plant': 'Wormadam',
+  'giratina-altered': 'Giratina',
+}
+
+const formatPokemonName = (name: string): string => {
+  const specialCase = PokemonNameMap[name];
+  if (specialCase) return specialCase;
+
+  const baseName = name.split('-')[0];
+
+  return baseName
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+    .join(' ');
 }
 
 export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
@@ -109,7 +116,7 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
       <div className="flex flex-col justify-center items-center gap-1">
         <h2 className="text-gray-600">#{pokemon.id.toString().padStart(4, '0')}</h2>
         <h3 className="font-semibold">{formatPokemonName(pokemon.name)}</h3>
-        <div className="flex flex-row gap-1 m-1">
+        <div className="flex gap-1 m-1">
           {pokemon.types.map((type, index) => (
             <span 
               key={index}
