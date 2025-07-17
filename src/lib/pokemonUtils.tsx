@@ -51,6 +51,28 @@ export const getFirstTypeColor = (pokemon: PokeApiPokemon): string => {
   return typeBackgroundColor[firstType || 'normal']
 }
 
+export const typeWeaknesses: Record<string, string[]> = {
+  bug: ['fire', 'flying', 'rock'],
+  dark: ['fighting', 'bug', 'fairy'],
+  dragon: ['ice', 'dragon', 'fairy'],
+  electric: ['ground'],
+  fairy: ['poison', 'steel'],
+  fighting: ['flying', 'psychic', 'fairy'],
+  fire: ['water', 'ground', 'rock'],
+  flying: ['electric', 'ice', 'rock'],
+  ghost: ['ghost', 'dark'],
+  grass: ['fire', 'ice', 'poison', 'flying', 'bug'],
+  ground: ['water', 'grass', 'ice'],
+  ice: ['fire', 'fighting', 'rock', 'steel'],
+  normal: ['fighting'],
+  poison: ['ground', 'psychic'],
+  psychic: ['bug', 'ghost', 'dark'],
+  rock: ['water', 'grass', 'fighting', 'ground', 'steel'],
+  steel: ['fire', 'fighting', 'ground'],
+  water: ['grass', 'electric'],
+  
+}
+
 // Mapeamento de nomes especiais
 export const PokemonNameMap: Record<string, string> = {
   'nidoran-f': 'Nidoran♀',
