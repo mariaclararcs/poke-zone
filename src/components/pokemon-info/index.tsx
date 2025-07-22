@@ -9,12 +9,17 @@ import {
 } from "pokenode-ts"
 import Image from "next/image"
 import { useParams } from "next/navigation"
-import { formatPokemonName, 
+import {
+  formatPokemonName, 
   PokemonTypeBadge, 
   getFirstTypeColor,
   getFirstRingColor,
   getEnglishSpeciesName,
-  calculateWeaknesses } from "@/lib/pokemonUtils"
+  calculateWeaknesses,
+  getGenderRate,
+  getEggGroups,
+  getEggCycle
+} from "@/lib/pokemonUtils"
 
 export default function PokemonInfo() {
   const [pokemon, setPokemon] = useState<PokeApiPokemon | null>(null)
@@ -263,6 +268,45 @@ export default function PokemonInfo() {
           </div>
         </div>
         */}
+
+        {/* Breeding */}
+        {species && (
+          <div className="bg-gray-100 p-4 rounded-lg">
+            <h4 className="font-semibold text-gray-600 mb-2">Breeding</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Gender */}
+              <div>
+                <h5 className="text-sm text-gray-500 mb-1">Gender</h5>
+                {getGenderRate(species).genderless ? (
+                  <p>Genderless</p>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="flex items-center">
+                      <span className="w-20">Male:</span>
+                      <span>{getGenderRate(species).male}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="w-20">Female:</span>
+                      <span>{getGenderRate(species).female}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Egg Groups */}
+              <div>
+                <h5 className="text-sm text-gray-500 mb-1">Egg Groups</h5>
+                <p className="capitalize">{getEggGroups(species)}</p>
+              </div>
+
+              {/* Egg Cycle */}
+              <div>
+                <h5 className="text-sm text-gray-500 mb-1">Egg Cycle</h5>
+                <p>{getEggCycle(species)}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Habilidades */}
         <div className="bg-gray-100 p-4 rounded-lg">

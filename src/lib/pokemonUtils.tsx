@@ -256,3 +256,39 @@ export const getEnglishSpeciesName = (species: PokemonSpecies | null): string =>
   
   return speciesName
 }
+
+// Função para formatar a porcentagem de gênero
+export const getGenderRate = (species: PokemonSpecies | null): {male: string, female: string, genderless: boolean} => {
+  if (!species) return {male: '0%', female: '0%', genderless: true};
+  
+  // -1 significa sem gênero
+  if (species.gender_rate === -1) {
+    return {male: '0%', female: '0%', genderless: true};
+  }
+
+  const femalePercentage = (species.gender_rate / 8) * 100;
+  const malePercentage = 100 - femalePercentage;
+  
+  return {
+    male: `${malePercentage}%`,
+    female: `${femalePercentage}%`,
+    genderless: false
+  };
+};
+
+// Função para formatar grupos de ovos
+export const getEggGroups = (species: PokemonSpecies | null): string => {
+  if (!species || !species.egg_groups.length) return 'Unknown';
+  
+  return species.egg_groups
+    .map(group => formatPokemonName(group.name))
+    .join(', ');
+};
+
+// Função para formatar ciclos de ovo
+export const getEggCycle = (species: PokemonSpecies | null): string => {
+  if (!species) return 'Unknown';
+  
+  const steps = species.hatch_counter * 255;
+  return `${species.hatch_counter} (${steps} steps)`;
+};
