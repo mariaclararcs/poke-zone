@@ -9,7 +9,12 @@ import {
 } from "pokenode-ts"
 import Image from "next/image"
 import { useParams } from "next/navigation"
-import { formatPokemonName, PokemonTypeBadge, getFirstTypeColor, typeWeaknesses } from "@/lib/pokemonUtils"
+import { formatPokemonName, 
+  PokemonTypeBadge, 
+  getFirstTypeColor,
+  getFirstRingColor,
+  getEnglishSpeciesName,
+  calculateWeaknesses } from "@/lib/pokemonUtils"
 
 export default function PokemonInfo() {
   const [pokemon, setPokemon] = useState<PokeApiPokemon | null>(null)
@@ -101,9 +106,9 @@ export default function PokemonInfo() {
 
   const bgColorClass = getFirstTypeColor(pokemon)
 
-  const weaknesses = pokemon.types.flatMap(type => 
-    typeWeaknesses[type.type.name] || []
-  ).filter((v, i, a) => a.indexOf(v) === i)
+  const weaknesses = calculateWeaknesses(
+    pokemon.types.map(t => t.type.name)
+  )
 
   const getEnglishDescription = () => {
     if (!species) return "No description available"
@@ -117,6 +122,7 @@ export default function PokemonInfo() {
 
   const renderEvolutionChain = (chain: EvolutionChain) => {
     const evolutions: React.ReactNode[] = []
+    const ringColorClass = getFirstRingColor(pokemon)
     
     const processChain = (currentChain: EvolutionChain['chain']) => {
       const pokemonId = currentChain.species.url.split('/').slice(-2, -1)[0]
@@ -124,7 +130,7 @@ export default function PokemonInfo() {
       evolutions.push(
         <div key={currentChain.species.name} className="flex flex-col items-center">
           <div className={`bg-white p-2 rounded-full shadow-md ${
-            currentChain.species.name === pokemon?.name ? 'ring-2 ring-blue-500' : ''
+            currentChain.species.name === pokemon?.name ? `ring-2 ${ringColorClass}` : ''
           }`}>
             <Image
               src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`}
@@ -158,7 +164,7 @@ export default function PokemonInfo() {
   return (
     <div className="flex flex-col items-center gap-8 mx-auto px-4 sm:px-10 md:px-18 lg:px-24 py-6 xl:py-8 min-h-screen">
       {/* Seção superior com imagem e tipos */}
-      <div className={`flex flex-col items-center gap-2 py-6 px-44 ${bgColorClass} w-fit rounded-xl`}>
+      <div className={`flex flex-col items-center gap-2 py-6 px-44 w-fit rounded-xl`}>
         <div className="flex flex-row gap-3 text-3xl">
           <h2 className="font-bold capitalize">{formatPokemonName(pokemon.name)}</h2>
           <h2 className="text-gray-600">#{pokemon.id.toString().padStart(4, '0')}</h2>
@@ -211,13 +217,23 @@ export default function PokemonInfo() {
           </div>
           <div className="bg-gray-100 p-4 rounded-lg">
             <h4 className="font-semibold text-gray-600">Species</h4>
-            <p className="text-lg capitalize">{pokemon.species.name.replace('-', ' ')}</p>
+            <p className="text-lg capitalize">
+              {getEnglishSpeciesName(species)}
+            </p>
           </div>
           <div className="bg-gray-100 p-4 rounded-lg w-fit">
             <h4 className="font-semibold text-gray-600 mb-2">Weaknesses</h4>
             <div className="flex flex-row gap-2">
-              {weaknesses.map((type, index) => (
-                <PokemonTypeBadge key={index} type={type} className="rounded-2xl text-md w-28" />
+              {weaknesses.map((weakness, index) => (
+                <div key={index} className="relative">
+                  <PokemonTypeBadge 
+                    type={weakness.type} 
+                    className="rounded-2xl text-md w-28"
+                  />
+                  {weakness.multiplier === 4 && (
+                    <span className="absolute -top-1 -right-1 text-red-500 font-bold text-md">*</span>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -276,7 +292,7 @@ export default function PokemonInfo() {
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className="bg-blue-500 h-2 rounded-full" 
+                    className={`${bgColorClass} h-2 rounded-full`} 
                     style={{ width: `${Math.min(100, (stat.base_stat / 255) * 100)}%` }}
                   ></div>
                 </div>

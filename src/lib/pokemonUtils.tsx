@@ -1,7 +1,20 @@
 import React from "react"
-import { Pokemon as PokeApiPokemon } from "pokenode-ts"
+import { PokemonSpecies, Pokemon as PokeApiPokemon } from "pokenode-ts"
 
 export type PokemonType = keyof typeof typeColorMap
+
+interface Genus {
+  genus: string
+  language: {
+    name: string
+    url: string
+  }
+}
+
+interface WeaknessInfo {
+  type: string
+  multiplier: number // 2 ou 4
+}
 
 // Mapeamento dos tipos
 export const typeColorMap: Record<string, string> = {
@@ -25,30 +38,35 @@ export const typeColorMap: Record<string, string> = {
   water: "bg-water"
 }
 
-export const typeBackgroundColor: Record<string, string> = {
-  bug: "bg-bug/30",
-  dark: "bg-dark/30",
-  dragon: "bg-dragon/30",
-  electric: "bg-electric/30",
-  fairy: "bg-fairy/30",
-  fighting: "bg-fighting/30",
-  fire: "bg-fire/30",
-  flying: "bg-flying/30",
-  ghost: "bg-ghost/30",
-  grass: "bg-grass/30",
-  ground: "bg-ground/30",
-  ice: "bg-ice/30",
-  normal: "bg-normal/30",
-  poison: "bg-poison/30",
-  psychic: "bg-psychic/30",
-  rock: "bg-rock/30",
-  steel: "bg-steel/30",
-  water: "bg-water/30"
-}
-
 export const getFirstTypeColor = (pokemon: PokeApiPokemon): string => {
   const firstType = pokemon.types[0]?.type?.name as PokemonType | undefined
-  return typeBackgroundColor[firstType || 'normal']
+  return typeColorMap[firstType || 'normal']
+}
+
+export const typeRingColorMap: Record<string, string> = {
+  bug: "ring-bug",
+  dark: "ring-dark",
+  dragon: "ring-dragon",
+  electric: "ring-electric",
+  fairy: "ring-fairy",
+  fighting: "ring-fighting",
+  fire: "ring-fire",
+  flying: "ring-flying",
+  ghost: "ring-ghost",
+  grass: "ring-grass",
+  ground: "ring-ground",
+  ice: "ring-ice",
+  normal: "ring-normal",
+  poison: "ring-poison",
+  psychic: "ring-psychic",
+  rock: "ring-rock",
+  steel: "ring-steel",
+  water: "ring-water"
+}
+
+export const getFirstRingColor = (pokemon: PokeApiPokemon): string => {
+  const firstType = pokemon.types[0]?.type?.name as PokemonType | undefined
+  return typeRingColorMap[firstType || 'normal']
 }
 
 export const typeWeaknesses: Record<string, string[]> = {
@@ -69,8 +87,85 @@ export const typeWeaknesses: Record<string, string[]> = {
   psychic: ['bug', 'ghost', 'dark'],
   rock: ['water', 'grass', 'fighting', 'ground', 'steel'],
   steel: ['fire', 'fighting', 'ground'],
-  water: ['grass', 'electric'],
+  water: ['grass', 'electric']
+}
+
+export const typeResistances: Record<string, string[]> = {
+  bug: ['fighting', 'ground', 'grass'],
+  dark: ['ghost', 'dark'],
+  dragon: ['fire', 'water', 'grass', 'electric'],
+  electric: ['electric', 'flying', 'steel'],
+  fairy: ['fighting', 'bug', 'dark'],
+  fighting: ['rock', 'bug', 'dark'],
+  fire: ['fire', 'grass', 'ice', 'bug', 'steel', 'fairy'],
+  flying: ['grass', 'fighting', 'bug'],
+  ghost: ['poison', 'bug'],
+  grass: ['water', 'electric', 'grass', 'ground'],
+  ground: ['poison', 'rock'],
+  ice: ['ice'],
+  normal: [],
+  poison: ['fighting', 'poison', 'bug', 'grass', 'fairy'],
+  psychic: ['fighting', 'psychic'],
+  rock: ['normal', 'fire', 'poison', 'flying'],
+  steel: ['normal', 'grass', 'ice', 'flying', 'psychic', 'bug', 'rock', 'dragon', 'steel', 'fairy'],
+  water: ['fire', 'water', 'ice', 'steel']
+}
+
+export const typeImmunities: Record<string, string[]> = {
+  normal: ['ghost'],
+  ghost: ['normal', 'fighting'],
+  ground: ['electric'],
+  flying: ['ground'],
+  dark: ['psychic'],
+  fairy: ['dragon'],
+  steel: ['poison'],
+  electric: []
+}
+
+export const calculateWeaknesses = (types: string[]): WeaknessInfo[] => {
+  if (types.length === 0) return []
   
+  // Inicia com as fraquezas do primeiro tipo
+  let weaknesses = [...(typeWeaknesses[types[0]] || [])]
+  
+  // Se houver segundo tipo, calcula as interações
+  if (types.length > 1) {
+    const secondType = types[1]
+    
+    // 1. Remove fraquezas que são resistências do segundo tipo
+    weaknesses = weaknesses.filter(
+      (weakness: string) => !typeResistances[secondType]?.includes(weakness)
+    )
+    
+    // 2. Adiciona novas fraquezas do segundo tipo que não são resistidas pelo primeiro
+    const secondTypeWeaknesses = typeWeaknesses[secondType] || []
+    secondTypeWeaknesses.forEach((weakness: string) => {
+      if (!typeResistances[types[0]]?.includes(weakness)) {
+        weaknesses.push(weakness)
+      }
+    })
+    
+    // 3. Remove fraquezas que são imunidades de qualquer um dos tipos
+    weaknesses = weaknesses.filter((weakness: string) => {
+      return !typeImmunities[types[0]]?.includes(weakness) && 
+             !typeImmunities[types[1]]?.includes(weakness)
+    })
+  }
+  
+  // Conta ocorrências para determinar fraquezas 4x ou 2x
+  const weaknessCounts: Record<string, number> = {}
+  weaknesses.forEach((type: string) => {
+    weaknessCounts[type] = (weaknessCounts[type] || 0) + 1
+  })
+  
+  // Converte para o formato WeaknessInfo
+  const result = Object.keys(weaknessCounts).map(type => ({
+    type,
+    multiplier: weaknessCounts[type] > 1 ? 4 : 2
+  }))
+  
+  // Ordena por multiplicador (4x primeiro)
+  return result.sort((a, b) => b.multiplier - a.multiplier)
 }
 
 // Mapeamento de nomes especiais
@@ -149,3 +244,15 @@ export const PokemonTypeBadge = ({
     {type}
   </span>
 )
+
+export const getEnglishSpeciesName = (species: PokemonSpecies | null): string => {
+  if (!species) return "Unknown species"
+  
+  const englishGenus = species.genera.find(
+    (genus: Genus) => genus.language.name === 'en'
+  )
+
+  const speciesName = englishGenus?.genus.replace(/ Pokémon$/, '') || "Unknown species"
+  
+  return speciesName
+}
