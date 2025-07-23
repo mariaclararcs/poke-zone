@@ -173,6 +173,7 @@ export const PokemonNameMap: Record<string, string> = {
   'nidoran-f': 'Nidoran♀',
   'nidoran-m': 'Nidoran♂',
   'farfetchd': "Farfetch'd",
+  'sirfetchd': "Sirfetch'd",
   'mr-mime': 'Mr. Mime',
   'mime-jr': 'Mime Jr.',
   'ho-oh': 'Ho-Oh',

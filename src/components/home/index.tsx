@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import usePokemons from "@/hooks/usePokemons"
 import PokemonCard from "@/components/pokemon-card"
+import PokemonSearch from "@/components/pokemon-search"
 import { PaginationFull } from "@/components/pagination"
 import { z } from "zod"
 
@@ -60,24 +61,27 @@ export default function Home() {
   )
 
   return (
-    <div className="flex flex-col items-center gap-8 mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-6 xl:py-8 min-h-screen">
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full">
-        {pokemons.map(pokemon => (
-          <PokemonCard key={pokemon.id} pokemon={pokemon} />
-        ))}
-      </div>
+    <div className="flex flex-col items-center min-h-screen">
+      <PokemonSearch />
 
-      <div className="w-full">
-        <PaginationFull
-          pageIndex={page}
-          totalCount={count}
-          perPage={limit}
-          totalPages={totalPages}
-          hasNextPage={hasNextPage}
-          hasPreviousPage={hasPreviousPage}
-          onPageChange={handlePageChange}
-        />
+      <div className="flex flex-col items-center gap-8 mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-6 xl:py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full">
+          {pokemons.map(pokemon => (
+            <PokemonCard key={pokemon.id} pokemon={pokemon} />
+          ))}
+        </div>
+
+        <div className="w-full">
+          <PaginationFull
+            pageIndex={page}
+            totalCount={count}
+            perPage={limit}
+            totalPages={totalPages}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+            onPageChange={handlePageChange}
+          />
+        </div>
       </div>
     </div>
   )

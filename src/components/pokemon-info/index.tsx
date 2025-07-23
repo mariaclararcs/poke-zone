@@ -20,6 +20,8 @@ import {
   getEggGroups,
   getEggCycle
 } from "@/lib/pokemonUtils"
+import { ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 export default function PokemonInfo() {
   const [pokemon, setPokemon] = useState<PokeApiPokemon | null>(null)
@@ -81,6 +83,86 @@ export default function PokemonInfo() {
     }
   }, [pokemonName])
 
+  const [renderedEvolutions, setRenderedEvolutions] = useState<React.ReactNode[]>([])
+
+  useEffect(() => {
+    if (evolutionChain && pokemon) {
+      const renderEvolutionChain = async (chain: EvolutionChain) => {
+        const evolutions: React.ReactNode[] = []
+        const api = new PokemonClient()
+
+        const processChain = async (currentChain: EvolutionChain['chain']) => {
+          const pokemonId = currentChain.species.url.split('/').slice(-2, -1)[0]
+          
+          try {
+            const evolutionPokemon = await api.getPokemonByName(currentChain.species.name)
+            const evolutionRingColor = getFirstRingColor(evolutionPokemon)
+
+            evolutions.push(
+              <div key={currentChain.species.name} className="flex flex-col items-center">
+                <Link href={`/pokemons/${currentChain.species.name}`}
+                  className={`bg-white p-2 rounded-full hover:cursor-pointer ${
+                  currentChain.species.name === pokemon?.name 
+                    ? `ring-3 ${evolutionRingColor}` 
+                    : 'ring-3 ring-gray-200'
+                }`}>
+                  <Image
+                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`}
+                    alt={currentChain.species.name}
+                    width={100}
+                    height={100}
+                    className="mx-auto"
+                    unoptimized
+                  />
+                </Link>
+                <div className="flex flex-row gap-2 mt-2">
+                  <p className="font-medium capitalize">
+                    {formatPokemonName(currentChain.species.name)}
+                  </p>
+                  <p className="text-gray-600">
+                    #{evolutionPokemon.id.toString().padStart(4, '0')}
+                  </p>
+                </div>
+                <div className="flex gap-2 m-1">
+                  {evolutionPokemon.types.map((type, index) => (
+                    <PokemonTypeBadge 
+                      key={index} 
+                      type={type.type.name} 
+                      className="rounded-full text-xs w-16" 
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+
+            if (currentChain.evolves_to.length > 0) {
+              evolutions.push(
+                <div key={`arrow-${currentChain.species.name}`} className="flex items-center justify-center">
+                  <ArrowRight className="text-gray-400 mx-2" />
+                </div>
+              )
+              for (const evo of currentChain.evolves_to) {
+                await processChain(evo)
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching evolution data for ${currentChain.species.name}:`, error)
+          }
+        }
+
+        await processChain(chain.chain)
+        return evolutions
+      }
+
+      const fetchEvolutions = async () => {
+        const evolutions = await renderEvolutionChain(evolutionChain)
+        setRenderedEvolutions(evolutions)
+      }
+
+      fetchEvolutions()
+    }
+  }, [evolutionChain, pokemon])
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
@@ -125,50 +207,9 @@ export default function PokemonInfo() {
     return flavorText?.flavor_text || "No description available"
   }
 
-  const renderEvolutionChain = (chain: EvolutionChain) => {
-    const evolutions: React.ReactNode[] = []
-    const ringColorClass = getFirstRingColor(pokemon)
-    
-    const processChain = (currentChain: EvolutionChain['chain']) => {
-      const pokemonId = currentChain.species.url.split('/').slice(-2, -1)[0]
-      
-      evolutions.push(
-        <div key={currentChain.species.name} className="flex flex-col items-center">
-          <div className={`bg-white p-2 rounded-full shadow-md ${
-            currentChain.species.name === pokemon?.name ? `ring-2 ${ringColorClass}` : ''
-          }`}>
-            <Image
-              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`}
-              alt={currentChain.species.name}
-              width={80}
-              height={80}
-              className="mx-auto"
-              unoptimized
-            />
-          </div>
-          <p className="mt-2 font-medium capitalize">
-            {formatPokemonName(currentChain.species.name)}
-          </p>
-        </div>
-      )
-
-      if (currentChain.evolves_to.length > 0) {
-        evolutions.push(
-          <div key={`arrow-${currentChain.species.name}`} className="flex items-center justify-center">
-            <span className="text-gray-400 mx-2">→</span>
-          </div>
-        )
-        currentChain.evolves_to.forEach(evo => processChain(evo))
-      }
-    }
-
-    processChain(chain.chain)
-    return evolutions
-  }
-
   return (
     <div className="flex flex-col items-center gap-8 mx-auto px-4 sm:px-10 md:px-18 lg:px-24 py-6 xl:py-8 min-h-screen">
-      {/* Seção superior com imagem e tipos */}
+      {/* Image and Type */}
       <div className={`flex flex-col items-center gap-2 py-6 px-44 w-fit rounded-xl`}>
         <div className="flex flex-row gap-3 text-3xl">
           <h2 className="font-bold capitalize">{formatPokemonName(pokemon.name)}</h2>
@@ -177,7 +218,7 @@ export default function PokemonInfo() {
 
         <div className="flex gap-2 m-1">
           {pokemon.types.map((type, index) => (
-            <PokemonTypeBadge key={index} type={type.type.name} className="rounded-2xl text-md w-28" />
+            <PokemonTypeBadge key={index} type={type.type.name} className="rounded-full text-md w-28" />
           ))}
         </div>
         
@@ -193,7 +234,7 @@ export default function PokemonInfo() {
         </div>
       </div>
 
-      {/* Seção de informações detalhadas */}
+      {/* Info Details */}
       <div className="w-full max-w-4xl space-y-6">
         <div className="bg-gray-100 p-4 rounded-lg">
           <h4 className="font-semibold text-gray-600 mb-2">Description</h4>
@@ -206,7 +247,7 @@ export default function PokemonInfo() {
           </p>  
         </div>
 
-        {/* Estatísticas básicas */}
+        {/* Basic Info */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-gray-100 p-4 rounded-lg">
             <h4 className="font-semibold text-gray-600">Height</h4>
@@ -233,7 +274,7 @@ export default function PokemonInfo() {
                 <div key={index} className="relative">
                   <PokemonTypeBadge 
                     type={weakness.type} 
-                    className="rounded-2xl text-md w-28"
+                    className="rounded-full text-md w-28"
                   />
                   {weakness.multiplier === 4 && (
                     <span className="absolute -top-1 -right-1 text-red-500 font-bold text-md">*</span>
@@ -244,7 +285,7 @@ export default function PokemonInfo() {
           </div>
         </div>
 
-        {/* Seção de informações biológicas */}
+        {/* Bio Info */}
         {/*
         <div className="bg-gray-100 p-4 rounded-lg">
           <h4 className="font-semibold text-gray-600 mb-2">Biological Info</h4>
@@ -308,7 +349,7 @@ export default function PokemonInfo() {
           </div>
         )}
 
-        {/* Habilidades */}
+        {/* Abilities */}
         <div className="bg-gray-100 p-4 rounded-lg">
           <h4 className="font-semibold text-gray-600 mb-2">Abilities</h4>
           <div className="flex flex-wrap gap-2">
@@ -324,7 +365,7 @@ export default function PokemonInfo() {
           </div>
         </div>
 
-        {/* Estatísticas */}
+        {/* Base Stats */}
         <div className="bg-gray-100 p-4 rounded-lg">
           <h4 className="font-semibold text-gray-600 mb-2">Stats</h4>
           <div className="space-y-2">
@@ -345,7 +386,7 @@ export default function PokemonInfo() {
           </div>
         </div>
 
-        {/* Movimentos */}
+        {/* Moves */}
         <div className="bg-gray-100 p-4 rounded-lg">
           <h4 className="font-semibold text-gray-600 mb-2">Moves ({pokemon.moves.length})</h4>
           <div className="flex flex-wrap gap-2">
@@ -365,17 +406,17 @@ export default function PokemonInfo() {
           </div>
         </div>
 
-        {/* Seção de Evolução */}
+        {/* Evolution */}
         {evolutionChain && (
           <div className="bg-gray-100 p-4 rounded-lg">
             <h4 className="font-semibold text-gray-600 mb-4">Evolution Chain</h4>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              {renderEvolutionChain(evolutionChain)}
+              {renderedEvolutions}
             </div>
           </div>
         )}
 
-        {/* Sprites adicionais */}
+        {/* Sprites */}
         <div className="bg-gray-100 p-4 rounded-lg">
           <h4 className="font-semibold text-gray-600 mb-2">Sprites</h4>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

@@ -34,7 +34,7 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
         <h3 className="font-semibold">{formatPokemonName(pokemon.name)}</h3>
         <div className="flex gap-1 m-1">
           {pokemon.types.map((type, index) => (
-            <PokemonTypeBadge key={index} type={type.type.name} className="rounded-xl text-xs w-22" />
+            <PokemonTypeBadge key={index} type={type.type.name} className="rounded-full text-xs w-22" />
           ))}
         </div>
       </div>
