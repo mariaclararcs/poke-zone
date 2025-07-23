@@ -19,6 +19,7 @@ export default function Home() {
     .parse(searchParams.get("page") ?? "1")
 
   const [page, setPage] = useState(currentPage)
+  const [searchTerm, setSearchTerm] = useState("")
   const { pokemons, loading, error, count } = usePokemons(limit, (page - 1) * limit)
 
   useEffect(() => {
@@ -32,12 +33,25 @@ export default function Home() {
     })
   }, [page, router, searchParams])
 
+  const handleSearch = (term: string) => {
+    setSearchTerm(term)
+    setPage(1)
+  }
+
+  const filteredPokemons = searchTerm
+    ? pokemons.filter(pokemon => 
+        pokemon.name.toLowerCase().includes(searchTerm) || 
+        pokemon.id.toString().includes(searchTerm)
+      )
+    : pokemons
+
   const totalPages = Math.ceil(count / limit)
   const hasNextPage = page < totalPages
   const hasPreviousPage = page > 1
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage)
+    setSearchTerm("")
 
     const params = new URLSearchParams(searchParams.toString())
     params.set("page", newPage.toString())
@@ -62,26 +76,37 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center min-h-screen">
-      <PokemonSearch />
+      <PokemonSearch onSearch={handleSearch} />
 
       <div className="flex flex-col items-center gap-8 mx-auto px-4 sm:px-8 md:px-12 lg:px-20 py-6 xl:py-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full">
-          {pokemons.map(pokemon => (
-            <PokemonCard key={pokemon.id} pokemon={pokemon} />
-          ))}
-        </div>
+        {filteredPokemons.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-lg">No Pokémon found matching</p>
+            <p className="text-sm text-muted-foreground">Try a different name or Pokédex number</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full">
+              {filteredPokemons.map(pokemon => (
+                <PokemonCard key={pokemon.id} pokemon={pokemon} />
+              ))}
+            </div>
 
-        <div className="w-full">
-          <PaginationFull
-            pageIndex={page}
-            totalCount={count}
-            perPage={limit}
-            totalPages={totalPages}
-            hasNextPage={hasNextPage}
-            hasPreviousPage={hasPreviousPage}
-            onPageChange={handlePageChange}
-          />
-        </div>
+            {!searchTerm && (
+              <div className="w-full">
+                <PaginationFull
+                  pageIndex={page}
+                  totalCount={count}
+                  perPage={limit}
+                  totalPages={totalPages}
+                  hasNextPage={hasNextPage}
+                  hasPreviousPage={hasPreviousPage}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   )
