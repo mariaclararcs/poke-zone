@@ -2,7 +2,7 @@
 
 export default function Footer() {
     return (
-        <footer className="w-full bg-blue-900 py-6">
+        <footer className="w-full bg-secondary py-6">
             <div className="flex flex-row justify-between items-end container mx-auto px-4">
                 <div className="flex flex-row items-center">
                     <span>PokéZone</span>

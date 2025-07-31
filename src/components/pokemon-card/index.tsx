@@ -6,7 +6,7 @@ import { formatPokemonName, PokemonTypeBadge } from "@/lib/pokemonUtils"
 export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
   const imageUrl = pokemon.sprites.other?.['official-artwork']?.front_default || 
   pokemon.sprites.front_default ||
-  '/pokezone-icon.svg' // fallback
+  '/pokeball-icon.svg' // fallback
 
   return (
     <div className="flex flex-col justify-center items-center w-fit gap-2 border-1 border-gray-400 rounded-md p-2">
@@ -17,7 +17,7 @@ export default function PokemonCard({ pokemon }: { pokemon: Pokemon }) {
         <div>
           {imageUrl ? (
             <Image 
-              src={imageUrl || "/pokezone-icon.svg"} 
+              src={imageUrl || "/pokeball-icon.svg"} 
               alt={pokemon.name}
               className="bg-gray-200 rounded-md p-1"
               width={200}

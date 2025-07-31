@@ -189,7 +189,7 @@ export default function PokemonInfo() {
 
   const imageUrl = pokemon.sprites.other?.['official-artwork']?.front_default || 
                    pokemon.sprites.front_default ||
-                   '/pokezone-icon.svg'
+                   '/pokeball-icon.svg'
 
   const bgColorClass = getFirstTypeColor(pokemon)
 
